@@ -7,19 +7,25 @@ CHAT_ID = os.environ.get("CHAT_ID")
 
 BOT_URL = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
 
-RSS_URL = "https://feeds.bbci.co.uk/news/technology/rss.xml"
+feeds = [
+    "https://www.motorsport.com/rss/f1/news/",
+    "https://www.fia.com/news/rss",
+    "https://www.formulapassion.it/feed",
+    "https://www.formula1.com/en/latest/all.xml"
+]
 
-feed = feedparser.parse(RSS_URL)
+for feed_url in feeds:
+    feed = feedparser.parse(feed_url)
 
-for entry in feed.entries[:3]:
-    title = entry.title
-    link = entry.link
+    for entry in feed.entries[:2]:
+        title = entry.title
+        link = entry.link
 
-    message = f"📰 {title}\n{link}"
+        message = f"🏁 F1 NEWS\n\n{title}\n{link}"
 
-    data = {
-        "chat_id": CHAT_ID,
-        "text": message
-    }
+        data = {
+            "chat_id": CHAT_ID,
+            "text": message
+        }
 
-    requests.post(BOT_URL, data=data)
+        requests.post(BOT_URL, data=data)
