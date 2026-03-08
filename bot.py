@@ -1,7 +1,7 @@
 import requests
 import os
 import feedparser
-import json
+import subprocess
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
@@ -27,19 +27,19 @@ feeds = {
     }
 }
 
-# FILE CHE SALVA LE NEWS GIÀ INVIATE
-sent_file = "sent_news.json"
+sent_file = "sent_news.txt"
 
+# carica news già inviate
 try:
     with open(sent_file, "r") as f:
-        sent_news = json.load(f)
+        sent_news = f.read().splitlines()
 except:
     sent_news = []
 
-def detect_type(title):
-    title_lower = title.lower()
 
-    if '"' in title or '“' in title or '”' in title or '«' in title or '»' in title:
+def detect_type(title):
+
+    if '"' in title or "“" in title or "”" in title or "«" in title or "»" in title:
         return "INTERVISTA"
 
     if ":" in title:
@@ -47,16 +47,21 @@ def detect_type(title):
 
     return "NEWS"
 
+
 def detect_series(link):
+
     link = link.lower()
 
     if "f2" in link:
         return "F2"
+
     if "f3" in link:
         return "F3"
 
     return "F1"
 
+
+new_links = []
 
 for source, info in feeds.items():
 
@@ -68,12 +73,13 @@ for source, info in feeds.items():
         link = entry.link
         icon = info["icon"]
 
-        # BLOCCA NEWS DUPLICATE
+        # blocca duplicati
         if link in sent_news:
             continue
 
-        # FILTRO FORMULAPASSION
+        # filtro formulapassion
         if source == "FormulaPassion":
+
             url_lower = link.lower()
 
             if not any(x in url_lower for x in ["f1", "f2", "f3"]):
@@ -94,8 +100,19 @@ for source, info in feeds.items():
 
         requests.post(BOT_URL, data=data)
 
-        sent_news.append(link)
+        new_links.append(link)
 
-# SALVA LE NEWS GIÀ INVIATE
-with open(sent_file, "w") as f:
-    json.dump(sent_news, f)
+
+# salva nuove news
+if new_links:
+
+    with open(sent_file, "a") as f:
+        for link in new_links:
+            f.write(link + "\n")
+
+    subprocess.run(["git", "config", "--global", "user.email", "bot@example.com"])
+    subprocess.run(["git", "config", "--global", "user.name", "telegram-bot"])
+
+    subprocess.run(["git", "add", sent_file])
+    subprocess.run(["git", "commit", "-m", "update sent news"])
+    subprocess.run(["git", "push"])
