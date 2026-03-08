@@ -26,6 +26,21 @@ feeds = {
     }
 }
 
+def detect_type(title):
+    title_lower = title.lower()
+
+    if '"' in title or '“' in title or '”' in title or '«' in title or '»' in title:
+        return "INTERVISTA"
+
+    if ":" in title and any(name in title_lower for name in [
+        "hamilton","verstappen","leclerc","norris","sainz",
+        "alonso","piastri","russell","horner","wolff"
+    ]):
+        return "INTERVISTA"
+
+    return "NEWS"
+
+
 for source, info in feeds.items():
     feed = feedparser.parse(info["url"])
 
@@ -34,7 +49,7 @@ for source, info in feeds.items():
         link = entry.link
         icon = info["icon"]
 
-        # FILTRO SOLO PER FORMULAPASSION
+        # filtro formulapassion
         if source == "FormulaPassion":
             url_lower = link.lower()
 
@@ -44,7 +59,9 @@ for source, info in feeds.items():
             if "classifica" in url_lower or "classifiche" in url_lower:
                 continue
 
-        message = f"{icon} {source}\n\n{title}\n{link}"
+        article_type = detect_type(title)
+
+        message = f"{icon} {source}\n{article_type}\n\n{title}\n{link}"
 
         data = {
             "chat_id": CHAT_ID,
