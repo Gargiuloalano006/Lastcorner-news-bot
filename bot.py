@@ -34,6 +34,16 @@ for source, info in feeds.items():
         link = entry.link
         icon = info["icon"]
 
+        # FILTRO SOLO PER FORMULAPASSION
+        if source == "FormulaPassion":
+            url_lower = link.lower()
+
+            if not any(x in url_lower for x in ["f1", "f2", "f3"]):
+                continue
+
+            if "classifica" in url_lower or "classifiche" in url_lower:
+                continue
+
         message = f"{icon} {source}\n\n{title}\n{link}"
 
         data = {
