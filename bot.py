@@ -29,12 +29,12 @@ feeds = {
 
 sent_file = "sent_news.txt"
 
-# carica news già inviate
+# carica link già inviati
 try:
     with open(sent_file, "r") as f:
-        sent_news = f.read().splitlines()
+        sent_news = set(f.read().splitlines())
 except:
-    sent_news = []
+    sent_news = set()
 
 
 def detect_type(title):
@@ -61,19 +61,18 @@ def detect_series(link):
     return "F1"
 
 
-new_links = []
+updated = False
 
 for source, info in feeds.items():
 
     feed = feedparser.parse(info["url"])
 
-    for entry in feed.entries[:3]:
+    for entry in feed.entries[:5]:
 
         title = entry.title
         link = entry.link
         icon = info["icon"]
 
-        # blocca duplicati
         if link in sent_news:
             continue
 
@@ -100,14 +99,15 @@ for source, info in feeds.items():
 
         requests.post(BOT_URL, data=data)
 
-        new_links.append(link)
+        sent_news.add(link)
+        updated = True
 
 
-# salva nuove news
-if new_links:
+# salva file aggiornato
+if updated:
 
-    with open(sent_file, "a") as f:
-        for link in new_links:
+    with open(sent_file, "w") as f:
+        for link in sent_news:
             f.write(link + "\n")
 
     subprocess.run(["git", "config", "--global", "user.email", "bot@example.com"])
