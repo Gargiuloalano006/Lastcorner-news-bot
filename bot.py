@@ -1,6 +1,7 @@
 import requests
 import os
 import feedparser
+import json
 
 TOKEN = os.environ.get("TELEGRAM_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
@@ -26,30 +27,52 @@ feeds = {
     }
 }
 
+# FILE CHE SALVA LE NEWS GIÀ INVIATE
+sent_file = "sent_news.json"
+
+try:
+    with open(sent_file, "r") as f:
+        sent_news = json.load(f)
+except:
+    sent_news = []
+
 def detect_type(title):
     title_lower = title.lower()
 
     if '"' in title or '“' in title or '”' in title or '«' in title or '»' in title:
         return "INTERVISTA"
 
-    if ":" in title and any(name in title_lower for name in [
-        "hamilton","verstappen","leclerc","norris","sainz",
-        "alonso","piastri","russell","horner","wolff"
-    ]):
+    if ":" in title:
         return "INTERVISTA"
 
     return "NEWS"
 
+def detect_series(link):
+    link = link.lower()
+
+    if "f2" in link:
+        return "F2"
+    if "f3" in link:
+        return "F3"
+
+    return "F1"
+
 
 for source, info in feeds.items():
+
     feed = feedparser.parse(info["url"])
 
-    for entry in feed.entries[:2]:
+    for entry in feed.entries[:3]:
+
         title = entry.title
         link = entry.link
         icon = info["icon"]
 
-        # filtro formulapassion
+        # BLOCCA NEWS DUPLICATE
+        if link in sent_news:
+            continue
+
+        # FILTRO FORMULAPASSION
         if source == "FormulaPassion":
             url_lower = link.lower()
 
@@ -60,8 +83,9 @@ for source, info in feeds.items():
                 continue
 
         article_type = detect_type(title)
+        series = detect_series(link)
 
-        message = f"{icon} {source}\n{article_type}\n\n{title}\n{link}"
+        message = f"{icon} {source}\n{article_type} {series}\n\n{title}\n{link}"
 
         data = {
             "chat_id": CHAT_ID,
@@ -69,3 +93,9 @@ for source, info in feeds.items():
         }
 
         requests.post(BOT_URL, data=data)
+
+        sent_news.append(link)
+
+# SALVA LE NEWS GIÀ INVIATE
+with open(sent_file, "w") as f:
+    json.dump(sent_news, f)
