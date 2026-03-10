@@ -2,7 +2,9 @@ name: run-bot
 
 on:
   schedule:
-    - cron: "*/10 * * * *"
+    - cron: "*/15 * * * *"
+    - cron: "5-59/15 * * * *"
+    - cron: "10-59/15 * * * *"
   workflow_dispatch:
 
 permissions:
