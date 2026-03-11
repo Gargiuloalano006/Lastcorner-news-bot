@@ -67,8 +67,7 @@ for source, info in feeds.items():
 
     feed = feedparser.parse(info["url"])
 
-    for entry in feed.entries[:10]:
-
+  
         title = entry.title
         link = entry.link
         icon = info["icon"]
