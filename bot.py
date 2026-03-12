@@ -19,7 +19,7 @@ log = logging.getLogger("f1-bot")
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-TOKEN   = os.environ.get("TELEGRAM_TOKE")
+TOKEN   = os.environ.get("TELEGRAM_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID")
 
 if not TOKEN or not CHAT_ID:
